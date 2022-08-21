@@ -10,8 +10,9 @@
   --font-code: 'Roboto', monospace;
   --bg-color: #00163f;
   --font-color: #ffffff;
+  --font-color2: #da0808;
   --btn-bg-color: #ffffff;
-  --accent-color: #be7efe;
+  --accent-color: #d529ef;
   --header-shadow: #000 0px 0px 5px;
 }
 
@@ -145,6 +146,22 @@ section {
   font-style: italic;
   margin: 2rem 0;
   font-size: 3.5rem;
+  text-align: center;
+}
+
+.countdown h2 {
+  text-shadow: 2px 2px 0 var(--font-color2);
+  font-style: italic;
+  margin: 2rem 0;
+  font-size: 2rem;
+  text-align: center;
+}
+
+.countdown h3 {
+  text-shadow: 2px 2px 0 var(--font-color2);
+  font-style: italic;
+  margin: 2rem 0;
+  font-size: 1rem;
   text-align: center;
 }
 
