@@ -1,254 +1,231 @@
-# HTML5-PHP
+Dompdf
+======
 
-HTML5 is a standards-compliant HTML5 parser and writer written entirely in PHP.
-It is stable and used in many production websites, and has
-well over [five million downloads](https://packagist.org/packages/masterminds/html5).
+[![Build Status](https://github.com/dompdf/dompdf/actions/workflows/test.yml/badge.svg)](https://github.com/dompdf/dompdf/actions/workflows/test.yml)
+[![Latest Release](https://poser.pugx.org/dompdf/dompdf/v/stable.png)](https://packagist.org/packages/dompdf/dompdf)
+[![Total Downloads](https://poser.pugx.org/dompdf/dompdf/downloads.png)](https://packagist.org/packages/dompdf/dompdf)
+[![License](https://poser.pugx.org/dompdf/dompdf/license.png)](https://packagist.org/packages/dompdf/dompdf)
+ 
+**Dompdf is an HTML to PDF converter**
 
-HTML5 provides the following features.
+At its heart, dompdf is (mostly) a [CSS 2.1](http://www.w3.org/TR/CSS2/) compliant
+HTML layout and rendering engine written in PHP. It is a style-driven renderer:
+it will download and read external stylesheets, inline style tags, and the style
+attributes of individual HTML elements. It also supports most presentational
+HTML attributes.
 
-- An HTML5 serializer
-- Support for PHP namespaces
-- Composer support
-- Event-based (SAX-like) parser
-- A DOM tree builder
-- Interoperability with [QueryPath](https://github.com/technosophos/querypath)
-- Runs on **PHP** 5.3.0 or newer
+*This document applies to the latest stable code which may not reflect the current 
+release. For released code please
+[navigate to the appropriate tag](https://github.com/dompdf/dompdf/tags).*
 
-[![Build Status](https://travis-ci.org/Masterminds/html5-php.png?branch=master)](https://travis-ci.org/Masterminds/html5-php)
-[![Latest Stable Version](https://poser.pugx.org/masterminds/html5/v/stable.png)](https://packagist.org/packages/masterminds/html5)
-[![Code Coverage](https://scrutinizer-ci.com/g/Masterminds/html5-php/badges/coverage.png?b=master)](https://scrutinizer-ci.com/g/Masterminds/html5-php/?branch=master)
-[![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/Masterminds/html5-php/badges/quality-score.png?b=master)](https://scrutinizer-ci.com/g/Masterminds/html5-php/?branch=master)
-[![Stability: Sustained](https://masterminds.github.io/stability/sustained.svg)](https://masterminds.github.io/stability/sustained.html)
+----
 
-## Installation
+**Check out the [demo](http://eclecticgeek.com/dompdf/debug.php) and ask any
+question on [StackOverflow](https://stackoverflow.com/questions/tagged/dompdf) or
+in [Discussions](https://github.com/dompdf/dompdf/discussions).**
 
-Install HTML5-PHP using [composer](http://getcomposer.org/).
+Follow us on [![Twitter](http://twitter-badges.s3.amazonaws.com/twitter-a.png)](http://www.twitter.com/dompdf).
 
-By adding the `masterminds/html5` dependency to your `composer.json` file:
+---
 
-```json
-{
-  "require" : {
-    "masterminds/html5": "^2.0"
-  },
-}
-```
 
-By invoking require command via composer executable:
+
+## Features
+
+ * Handles most CSS 2.1 and a few CSS3 properties, including @import, @media &
+   @page rules
+ * Supports most presentational HTML 4.0 attributes
+ * Supports external stylesheets, either local or through http/ftp (via
+   fopen-wrappers)
+ * Supports complex tables, including row & column spans, separate & collapsed
+   border models, individual cell styling
+ * Image support (gif, png (8, 24 and 32 bit with alpha channel), bmp & jpeg)
+ * No dependencies on external PDF libraries, thanks to the R&OS PDF class
+ * Inline PHP support
+ * Basic SVG support (see "Limitations" below)
+ 
+## Requirements
+
+ * PHP version 7.1 or higher
+ * DOM extension
+ * MBString extension
+ * php-font-lib
+ * php-svg-lib
+ 
+Note that some required dependencies may have further dependencies 
+(notably php-svg-lib requires sabberworm/php-css-parser).
+
+### Recommendations
+
+ * OPcache (OPcache, XCache, APC, etc.): improves performance
+ * GD (for image processing)
+ * IMagick or GMagick extension: improves image processing performance
+
+Visit the wiki for more information:
+https://github.com/dompdf/dompdf/wiki/Requirements
+
+## About Fonts & Character Encoding
+
+PDF documents internally support the following fonts: Helvetica, Times-Roman,
+Courier, Zapf-Dingbats, & Symbol. These fonts only support Windows ANSI
+encoding. In order for a PDF to display characters that are not available in
+Windows ANSI, you must supply an external font. Dompdf will embed any referenced
+font in the PDF so long as it has been pre-loaded or is accessible to dompdf and
+reference in CSS @font-face rules. See the
+[font overview](https://github.com/dompdf/dompdf/wiki/About-Fonts-and-Character-Encoding)
+for more information on how to use fonts.
+
+The [DejaVu TrueType fonts](https://dejavu-fonts.github.io/) have been pre-installed
+to give dompdf decent Unicode character coverage by default. To use the DejaVu
+fonts reference the font in your stylesheet, e.g. `body { font-family: DejaVu
+Sans; }` (for DejaVu Sans). The following DejaVu 2.34 fonts are available:
+DejaVu Sans, DejaVu Serif, and DejaVu Sans Mono.
+
+## Easy Installation
+
+### Install with composer
+
+To install with [Composer](https://getcomposer.org/), simply require the
+latest version of this package.
 
 ```bash
-composer require masterminds/html5
+composer require dompdf/dompdf
 ```
 
-## Basic Usage
-
-HTML5-PHP has a high-level API and a low-level API.
-
-Here is how you use the high-level `HTML5` library API:
+Make sure that the autoload file from Composer is loaded.
 
 ```php
-<?php
-// Assuming you installed from Composer:
-require "vendor/autoload.php";
+// somewhere early in your project's loading, require the Composer autoloader
+// see: http://getcomposer.org/doc/00-intro.md
+require 'vendor/autoload.php';
 
-use Masterminds\HTML5;
-
-// An example HTML document:
-$html = <<< 'HERE'
-  <html>
-  <head>
-    <title>TEST</title>
-  </head>
-  <body id='foo'>
-    <h1>Hello World</h1>
-    <p>This is a test of the HTML5 parser.</p>
-  </body>
-  </html>
-HERE;
-
-// Parse the document. $dom is a DOMDocument.
-$html5 = new HTML5();
-$dom = $html5->loadHTML($html);
-
-// Render it as HTML5:
-print $html5->saveHTML($dom);
-
-// Or save it to a file:
-$html5->save($dom, 'out.html');
 ```
 
-The `$dom` created by the parser is a full `DOMDocument` object. And the
-`save()` and `saveHTML()` methods will take any DOMDocument.
+### Download and install
 
-### Options
+Download a packaged archive of dompdf and extract it into the 
+directory where dompdf will reside
 
-It is possible to pass in an array of configuration options when loading
-an HTML5 document.
+ * You can download stable copies of dompdf from
+   https://github.com/dompdf/dompdf/releases
+ * Or download a nightly (the latest, unreleased code) from
+   http://eclecticgeek.com/dompdf
+
+Use the packaged release autoloader to load dompdf, libraries,
+and helper functions in your PHP:
 
 ```php
-// An associative array of options
-$options = array(
-  'option_name' => 'option_value',
-);
-
-// Provide the options to the constructor
-$html5 = new HTML5($options);
-
-$dom = $html5->loadHTML($html);
+// include autoloader
+require_once 'dompdf/autoload.inc.php';
 ```
 
-The following options are supported:
+Note: packaged releases are named according using semantic
+versioning (_dompdf_MAJOR-MINOR-PATCH.zip_). So the 1.0.0 
+release would be dompdf_1-0-0.zip. This is the only download
+that includes the autoloader for Dompdf and all its dependencies.
 
-* `encode_entities` (boolean): Indicates that the serializer should aggressively
-  encode characters as entities. Without this, it only encodes the bare
-  minimum.
-* `disable_html_ns` (boolean): Prevents the parser from automatically
-  assigning the HTML5 namespace to the DOM document. This is for
-  non-namespace aware DOM tools.
-* `target_document` (\DOMDocument): A DOM document that will be used as the
-  destination for the parsed nodes.
-* `implicit_namespaces` (array): An assoc array of namespaces that should be
-  used by the parser. Name is tag prefix, value is NS URI.
+### Install with git
 
-## The Low-Level API
+From the command line, switch to the directory where dompdf will
+reside and run the following commands:
 
-This library provides the following low-level APIs that you can use to
-create more customized HTML5 tools:
+```sh
+git clone https://github.com/dompdf/dompdf.git
+cd dompdf/lib
 
-- A SAX-like event-based parser that you can hook into for special kinds
-of parsing.
-- A flexible error-reporting mechanism that can be tuned to document
-syntax checking.
-- A DOM implementation that uses PHP's built-in DOM library.
+git clone https://github.com/PhenX/php-font-lib.git php-font-lib
+cd php-font-lib
+git checkout 0.5.1
+cd ..
 
-The unit tests exercise each piece of the API, and every public function
-is well-documented.
+git clone https://github.com/PhenX/php-svg-lib.git php-svg-lib
+cd php-svg-lib
+git checkout v0.3.2
+cd ..
 
-### Parser Design
+git clone https://github.com/sabberworm/PHP-CSS-Parser.git php-css-parser
+cd php-css-parser
+git checkout 8.1.0
+```
 
-The parser is designed as follows:
+Require dompdf and it's dependencies in your PHP.
+For details see the [autoloader in the utils project](https://github.com/dompdf/utils/blob/master/autoload.inc.php).
 
-- The `Scanner` handles scanning on behalf of the parser.
-- The `Tokenizer` requests data off of the scanner, parses it, clasifies
-it, and sends it to an `EventHandler`. It is a *recursive descent parser.*
-- The `EventHandler` receives notifications and data for each specific
-semantic event that occurs during tokenization.
-- The `DOMBuilder` is an `EventHandler` that listens for tokenizing
-events and builds a document tree (`DOMDocument`) based on the events.
+## Quick Start
 
-### Serializer Design
-
-The serializer takes a data structure (the `DOMDocument`) and transforms
-it into a character representation -- an HTML5 document.
-
-The serializer is broken into three parts:
-
-- The `OutputRules` contain the rules to turn DOM elements into strings. The
-rules are an implementation of the interface `RulesInterface` allowing for
-different rule sets to be used.
-- The `Traverser`, which is a special-purpose tree walker. It visits
-each node node in the tree and uses the `OutputRules` to transform the node
-into a string.
-- `HTML5` manages the `Traverser` and stores the resultant data
-in the correct place.
-
-The serializer (`save()`, `saveHTML()`) follows the
-[section 8.9 of the HTML 5.0 spec](http://www.w3.org/TR/2012/CR-html5-20121217/syntax.html#serializing-html-fragments).
-So tags are serialized according to these rules:
-
-- A tag with children: &lt;foo&gt;CHILDREN&lt;/foo&gt;
-- A tag that cannot have content: &lt;foo&gt; (no closing tag)
-- A tag that could have content, but doesn't: &lt;foo&gt;&lt;/foo&gt;
-
-## Known Issues (Or, Things We Designed Against the Spec)
-
-Please check the issue queue for a full list, but the following are
-issues known issues that are not presently on the roadmap:
-
-- Namespaces: HTML5 only [supports a selected list of namespaces](http://www.w3.org/TR/html5/infrastructure.html#namespaces)
-  and they do not operate in the same way as XML namespaces. A `:` has no special
-  meaning.
-  By default the parser does not support XML style namespaces via `:`;
-  to enable the XML namespaces see the  [XML Namespaces section](#xml-namespaces)
-- Scripts: This parser does not contain a JavaScript or a CSS
-  interpreter. While one may be supplied, not all features will be
-  supported.
-- Rentrance: The current parser is not re-entrant. (Thus you can't pause
-  the parser to modify the HTML string mid-parse.)
-- Validation: The current tree builder is **not** a validating parser.
-  While it will correct some HTML, it does not check that the HTML
-  conforms to the standard. (Should you wish, you can build a validating
-  parser by extending DOMTree or building your own EventHandler
-  implementation.)
-  * There is limited support for insertion modes.
-  * Some autocorrection is done automatically.
-  * Per the spec, many legacy tags are admitted and correctly handled,
-    even though they are technically not part of HTML5.
-- Attribute names and values: Due to the implementation details of the
-  PHP implementation of DOM, attribute names that do not follow the
-  XML 1.0 standard are not inserted into the DOM. (Effectively, they
-  are ignored.) If you've got a clever fix for this, jump in!
-- Processor Instructions: The HTML5 spec does not allow processor
-  instructions. We do. Since this is a server-side library, we think
-  this is useful. And that means, dear reader, that in some cases you
-  can parse the HTML from a mixed PHP/HTML document. This, however,
-  is an incidental feature, not a core feature.
-- HTML manifests: Unsupported.
-- PLAINTEXT: Unsupported.
-- Adoption Agency Algorithm: Not yet implemented. (8.2.5.4.7)
-
-## XML Namespaces
-
-To use XML style namespaces you have to configure well the main `HTML5` instance.
+Just pass your HTML in to dompdf and stream the output:
 
 ```php
-use Masterminds\HTML5;
-$html = new HTML5(array(
-    "xmlNamespaces" => true
-));
+// reference the Dompdf namespace
+use Dompdf\Dompdf;
 
-$dom = $html->loadHTML('<t:tag xmlns:t="http://www.example.com"/>');
+// instantiate and use the dompdf class
+$dompdf = new Dompdf();
+$dompdf->loadHtml('hello world');
 
-$dom->documentElement->namespaceURI; // http://www.example.com
+// (Optional) Setup the paper size and orientation
+$dompdf->setPaper('A4', 'landscape');
 
+// Render the HTML as PDF
+$dompdf->render();
+
+// Output the generated PDF to Browser
+$dompdf->stream();
 ```
 
-You can also add some default prefixes that will not require the namespace declaration,
-but its elements will be namespaced.
+### Setting Options
+
+Set options during dompdf instantiation:
 
 ```php
-use Masterminds\HTML5;
-$html = new HTML5(array(
-    "implicitNamespaces"=>array(
-        "t"=>"http://www.example.com"
-    )
-));
+use Dompdf\Dompdf;
+use Dompdf\Options;
 
-$dom = $html->loadHTML('<t:tag/>');
-
-$dom->documentElement->namespaceURI; // http://www.example.com
-
+$options = new Options();
+$options->set('defaultFont', 'Courier');
+$dompdf = new Dompdf($options);
 ```
 
-## Thanks to...
+or at run time
 
-The dedicated (and patient) contributors of patches small and large,
-who have already made this library better.See the CREDITS file for
-a list of contributors.
+```php
+use Dompdf\Dompdf;
 
-We owe a huge debt of gratitude to the original authors of html5lib.
+$dompdf = new Dompdf();
+$options = $dompdf->getOptions();
+$options->setDefaultFont('Courier');
+$dompdf->setOptions($options);
+```
 
-While not much of the original parser remains, we learned a lot from
-reading the html5lib library. And some pieces remain here. In
-particular, much of the UTF-8 and Unicode handling is derived from the
-html5lib project.
+See [Dompdf\Options](src/Options.php) for a list of available options.
 
-## License
+### Resource Reference Requirements
 
-This software is released under the MIT license. The original html5lib
-library was also released under the MIT license.
+In order to protect potentially sensitive information Dompdf imposes 
+restrictions on files referenced from the local file system or the web. 
 
-See LICENSE.txt
+Files accessed through web-based protocols have the following requirements:
+ * The Dompdf option "isRemoteEnabled" must be set to "true"
+ * PHP must either have the curl extension enabled or the 
+   allow_url_fopen setting set to true
+   
+Files accessed through the local file system have the following requirement:
+ * The file must fall within the path(s) specified for the Dompdf "chroot" option
 
-Certain files contain copyright assertions by specific individuals
-involved with html5lib. Those have been retained where appropriate.
+## Limitations (Known Issues)
+
+ * Table cells are not pageable, meaning a table row must fit on a single page.
+ * Elements are rendered on the active page when they are parsed.
+ * Embedding "raw" SVG's (`<svg><path...></svg>`) isn't working yet, you need to
+   either link to an external SVG file, or use a DataURI like this:
+     ```php
+     $html = '<img src="data:image/svg+xml;base64,' . base64_encode($svg) . '" ...>';
+     ```
+     Watch https://github.com/dompdf/dompdf/issues/320 for progress
+
+---
+
+[![Donate button](https://www.paypal.com/en_US/i/btn/btn_donate_SM.gif)](http://goo.gl/DSvWf)
+
+*If you find this project useful, please consider making a donation.
+Any funds donated will be used to help further development on this project.)*
